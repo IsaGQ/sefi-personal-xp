@@ -1,0 +1,12 @@
+{
+  "name": "sefi-personal-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Lógica del lado del cliente de SEFI-Personal",
+  "scripts": {
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

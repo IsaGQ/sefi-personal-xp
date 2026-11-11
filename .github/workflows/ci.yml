@@ -1,0 +1,70 @@
+name: CI-CD SEFI-Personal
+
+# Se ejecuta automáticamente en cada push (a cualquier rama) y en cada pull request hacia main.
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ---------- Integración continua: los dos jobs corren en paralelo ----------
+  test-python:
+    name: Pruebas backend (Python + unittest)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v6
+
+      - name: Instalar Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Ejecutar pruebas unittest
+        run: python -m unittest discover -s python_project/tests -t python_project -v
+
+  test-javascript:
+    name: Pruebas frontend (JavaScript + node --test)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v6
+
+      - name: Instalar Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+
+      - name: Ejecutar pruebas con el ejecutor nativo de Node
+        working-directory: javascript_project
+        run: npm test
+
+  # ---------- Despliegue continuo: solo si TODAS las pruebas pasan ----------
+  deploy:
+    name: Despliegue en Apache (self-hosted runner)
+    needs: [test-python, test-javascript]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: [self-hosted, linux]
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v6
+
+      - name: Construir el paquete (build)
+        run: |
+          rm -rf build
+          mkdir -p build/js
+          cp -r web/. build/
+          cp javascript_project/src/*.js build/js/
+          sed -i "s/__COMMIT__/${GITHUB_SHA::7}/g; s/__FECHA__/$(date '+%Y-%m-%d %H:%M')/g" build/index.html
+
+      - name: Limpiar el directorio público de Apache
+        run: |
+          DESTINO=/var/www/html
+          rm -rf "${DESTINO:?}"/*
+
+      - name: Copiar el build al directorio público
+        run: cp -r build/. /var/www/html/
+
+      - name: Verificar que el sitio responde
+        run: curl -fsS http://localhost/ | grep -q "SEFI-Personal"
