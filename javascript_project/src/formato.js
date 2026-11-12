@@ -1,18 +1,28 @@
 "use strict";
 
 // HU-01: separador de miles en los campos de dinero del formulario.
+const SEPARADOR_MILES = ".";
+const CIFRAS_POR_GRUPO = 3;
+
+/** Quita los puntos que ya tenga el texto: "1.500.000" -> "1500000". */
+function quitarPuntos(texto) {
+  return String(texto).split(SEPARADOR_MILES).join("");
+}
+
+
 function formatearMiles(valor) {
-  const digitos = String(valor).split(".").join("");
+  const digitos = quitarPuntos(valor);
   let resultado = "";
 
   for (let i = 0; i < digitos.length; i++) {
-    const faltan = digitos.length - i;
+    const cifrasQueFaltan = digitos.length - i;
+    const empiezaUnGrupo = i > 0 && cifrasQueFaltan % CIFRAS_POR_GRUPO === 0;
 
-    if (i > 0 && faltan % 3 === 0) {
-      resultado = resultado + ".";
+    if (empiezaUnGrupo) {
+      resultado += SEPARADOR_MILES;
     }
 
-    resultado = resultado + digitos[i];
+    resultado += digitos[i];
   }
 
   return resultado;
