@@ -1,12 +1,13 @@
 "use strict";
 
+// HU-11: agrega al dictamen el aviso de que no reemplaza la asesoría profesional.
+const AVISO = "Esta herramienta es informativa y no reemplaza la asesoría financiera profesional";
+
 function formatearDictamen(mensaje) {
-  if (mensaje.includes("Esta herramienta es informativa y no reemplaza la asesoría financiera profesional")) {
-    return mensaje;
-  }
-  return mensaje + ". Esta herramienta es informativa y no reemplaza la asesoría financiera profesional.";
+  const texto = String(mensaje).trim();
+  return texto.includes(AVISO) ? texto : `${texto}. ${AVISO}.`;
 }
 
 if (typeof module !== "undefined" && module.exports) {
-  module.exports = { formatearDictamen };
+  module.exports = { formatearDictamen, AVISO };
 }
