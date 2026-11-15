@@ -1,7 +1,12 @@
 "use strict";
 
+// HU-13: verifica que una dirección use HTTPS (cifrado en tránsito).
 function esUrlSegura(url) {
-  return url.startsWith("https://");
+  try {
+    return new URL(url).protocol === "https:";
+  } catch {
+    return false;
+  }
 }
 
 if (typeof module !== "undefined" && module.exports) {
