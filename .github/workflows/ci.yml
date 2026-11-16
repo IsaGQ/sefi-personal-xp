@@ -63,8 +63,18 @@ jobs:
           DESTINO=/var/www/html
           rm -rf "${DESTINO:?}"/*
 
-      - name: Copiar el build al directorio público
+      - name: Copiar el sitio (build) al directorio público
         run: cp -r build/. /var/www/html/
 
-      - name: Verificar que el sitio responde
-        run: curl -fsS http://localhost/ | grep -q "SEFI-Personal"
+      - name: Copiar frontend y backend a la carpeta api
+        run: |
+          mkdir -p /var/www/html/api/javascript_project /var/www/html/api/python_project
+          cp -r javascript_project/src /var/www/html/api/javascript_project/
+          cp -r python_project/src /var/www/html/api/python_project/
+
+      - name: Verificar que el sitio responde por HTTPS (candado activo)
+        run: curl -fskS https://localhost/ | grep -q "SEFI-Personal"
+
+      - name: Verificar que HTTP redirige a HTTPS
+        run: |
+          curl -sI http://localhost/ | grep -qi "^location: https://"
